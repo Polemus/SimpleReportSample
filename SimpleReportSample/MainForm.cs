@@ -15,6 +15,7 @@ using SimpleReportSample.HelperClassesAndInterfaces.BaseInterfaces;
 using System.Web.UI.WebControls;
 using System.Drawing;
 using CheckBox = System.Windows.Forms.CheckBox;
+using static SimpleReportSample.DataProvider;
 
 namespace SimpleReportSample
 {
@@ -144,9 +145,22 @@ namespace SimpleReportSample
             {
                 GenerateReportProgressBar.PerformStep();
                 //ProgressBarLabel.Text = $"Обработка файла #{GenerateReportProgressBar.Step} {employee}";
-                var pathToEmployee = GetPathToTimeReportByEmployeeName(PathToTaskSummaryDoc.Text, employee);
+                var pathToEmployee = GetPathToTimeReportByEmployeeName(employee);
+                var paymentData = GetPaymentDataFromList(employee);
+
+                TimeReport timeReportData = null;
 
                 if (string.IsNullOrEmpty(pathToEmployee))
+                {
+
+                    timeReportData = _dataProvider.GetTimeReportByProject(_timeReportFilesList, paymentData);
+                }
+                else
+                {
+                    timeReportData = _dataProvider.GetTimeReport(pathToEmployee);
+                }
+
+                if (timeReportData == null)
                 {
                     noTimeReportEmploees.Add(employee);
                     continue;
@@ -155,8 +169,8 @@ namespace SimpleReportSample
                 var reportGenerator = GetInvoiceReportGenerator(new InvoiceReportParams()
                 {
                     ContractorsData = GetContractorsData(employee),
-                    PaymentData = GetPaymentDataFromList(employee),
-                    PathToTaskSummaryDocs = pathToEmployee,
+                    PaymentData = paymentData,
+                    TimeReportData = timeReportData,
                     DateFrom = DateTimeFrom.Value,
                     DateTo = DateTimeTo.Value
                 });
@@ -202,7 +216,7 @@ namespace SimpleReportSample
             return _paymentData.Where(x => x.EmployerName.Contains(emploeeNameDivided[0]) && x.EmployerName.Contains(emploeeNameDivided[1])).SingleOrDefault();
         }
 
-        private string GetPathToTimeReportByEmployeeName(string pathToTaskSummaryDocText, string employeeName)
+        private string GetPathToTimeReportByEmployeeName(string employeeName)
         {
             string[] emploeeNameDivided = employeeName.Split(' ');
 

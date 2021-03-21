@@ -1,5 +1,6 @@
 ﻿using SimpleReportSample.HelperClassesAndInterfaces.BaseInterfaces;
 using System;
+using static SimpleReportSample.DataProvider;
 
 namespace SimpleReportSample.HelperClassesAndInterfaces
 {
@@ -9,7 +10,7 @@ namespace SimpleReportSample.HelperClassesAndInterfaces
 
         public PaymentData PaymentData { get; set; }
 
-        public string PathToTaskSummaryDocs { get; set; }
+        public TimeReport TimeReportData { get; set; }
 
         public DateTime DateFrom { get; set; }
 

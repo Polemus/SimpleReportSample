@@ -216,7 +216,7 @@ namespace SimpleReportSample
             // 
             // GenerateReportProgressBar
             // 
-            this.GenerateReportProgressBar.Location = new System.Drawing.Point(729, 266);
+            this.GenerateReportProgressBar.Location = new System.Drawing.Point(724, 265);
             this.GenerateReportProgressBar.Name = "GenerateReportProgressBar";
             this.GenerateReportProgressBar.Size = new System.Drawing.Size(472, 38);
             this.GenerateReportProgressBar.TabIndex = 16;

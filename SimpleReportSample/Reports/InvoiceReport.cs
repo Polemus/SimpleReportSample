@@ -34,7 +34,7 @@ namespace SimpleReportSample.Reports
         {
             _contractorsAndContractsData = invoiceReportParams.ContractorsData;
             _paymentData = invoiceReportParams.PaymentData;
-            _timeReport = _dataProvider.GetTimeReport(invoiceReportParams.PathToTaskSummaryDocs);
+            _timeReport = invoiceReportParams.TimeReportData;
             _dateTo = invoiceReportParams.DateTo;
             _dateFrom = invoiceReportParams.DateFrom;
 

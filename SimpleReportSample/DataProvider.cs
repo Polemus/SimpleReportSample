@@ -1,4 +1,5 @@
 ﻿using ExcelDataReader;
+using Microsoft.Office.Interop.Excel;
 using SimpleReportSample.HelperClassesAndInterfaces;
 using SimpleReportSample.HelperClassesAndInterfaces.BaseInterfaces;
 using System;
@@ -21,6 +22,63 @@ namespace SimpleReportSample
         {
             ///так и передаем? наименование таблицы? 
             return GetContractorsAndContractsValues(GetDataTableCollection(filePath, 4), tableName);
+        }
+
+        public TimeReport GetTimeReportByProject(List<string> filesInPath, PaymentData paymentData)
+        {
+            TimeReport timeReportResult = new TimeReport();
+            ///добавить фильтр по дате из названия файла
+            var reportFileByProject = filesInPath.Where(x => x.Contains(paymentData.ProjectName)).SingleOrDefault();
+            Microsoft.Office.Interop.Excel.Application excel = new Microsoft.Office.Interop.Excel.Application();
+            Microsoft.Office.Interop.Excel.Workbook wb = excel.Workbooks.Open(@reportFileByProject);
+
+            // Keeping track
+            bool found = false;
+            // Loop through all worksheets in the workbook
+            foreach (Microsoft.Office.Interop.Excel.Worksheet sheet in wb.Sheets)
+            {
+                // Check the name of the current sheet
+                if (sheet.Name == paymentData.EmployerName)
+                {
+                    found = true;
+                    break; // Exit the loop now
+                }
+            }
+
+            wb.Close();
+
+            if (found)
+            {
+                var table = GetDataTableCollectionByEmployeeName(reportFileByProject, paymentData.EmployerName, 11);
+
+                ///Костыль тк мы не знаем
+                if (!table.Columns.Contains("#"))
+                    table = GetDataTableCollectionByEmployeeName(reportFileByProject, paymentData.EmployerName, 14);
+
+                timeReportResult.TimeReportRows = new List<TimeReportRow>();
+                //timeReportResult.SetName(filePath);
+
+                foreach (DataRow row in table.Rows)
+                {
+                    TimeReportRow timeReportRow = new TimeReportRow();
+
+                    foreach (DataColumn column in table.Columns)
+                    {
+                        PutValueByTheCaptionTimeReport(row, column, timeReportRow);
+                    }
+
+                    timeReportResult.TimeReportRows.Add(timeReportRow);
+                }
+
+                /// удаляем последнюю строку с Total и все которые не заполнены в полях Task и Description
+                RemoveEmptyAndTotalRows(timeReportResult);
+            }
+            else
+            {
+                return null;
+            }
+
+            return timeReportResult;
         }
 
         public TimeReport GetTimeReport(string filePath)
@@ -59,7 +117,7 @@ namespace SimpleReportSample
         }
 
 
-        private DataTable GetTimeReportTable(DataTableCollection dataTableCollection)
+        private System.Data.DataTable GetTimeReportTable(DataTableCollection dataTableCollection)
         {
             /// тк таблица репорта начинается не с 1 колонки скипаем её
             dataTableCollection[0].Columns.RemoveAt(0);
@@ -115,6 +173,38 @@ namespace SimpleReportSample
             }
         }
 
+        private System.Data.DataTable GetDataTableCollectionByEmployeeName(string filePath, string employeeName, int skipRows = 0)
+        {
+            DataTableCollection dataTableCollection;
+
+            using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+            {
+                // Auto-detect format, supports:
+                //  - Binary Excel files (2.0-2003 format; *.xls)
+                //  - OpenXml Excel files (2007 format; *.xlsx, *.xlsb)
+                using (IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream))
+                {
+                    DataSet result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                    {
+                        ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                        {
+                            UseHeaderRow = true,
+                            ReadHeaderRow = rowReader =>
+                            {
+                                /// скипаем строки если есть какие либо ненужные нам для считывания
+                                for (int i = 0; i < skipRows; i++)
+                                    rowReader.Read();
+                            }
+                        }
+                    });
+
+                    dataTableCollection = result.Tables;
+                }
+            }
+
+            return dataTableCollection["employeeName"];
+        }
+
         private DataTableCollection GetDataTableCollection(string filePath, int skipRows = 0)
         {
             DataTableCollection dataTableCollection;
@@ -149,7 +239,7 @@ namespace SimpleReportSample
 
         private List<ContractorsAndContracts> GetContractorsAndContractsValues(DataTableCollection dataTableCollection, string tableName)
         {
-            DataTable table = dataTableCollection[tableName];
+            System.Data.DataTable table = dataTableCollection[tableName];
 
             if (table == null)
                 table = dataTableCollection[0];
@@ -173,7 +263,7 @@ namespace SimpleReportSample
 
         private List<PaymentData> GetPaymentDataValues(DataTableCollection dataTableCollection, string tableName)
         {
-            DataTable table = dataTableCollection[tableName];
+            System.Data.DataTable table = dataTableCollection[tableName];
             
             if (table == null)
                 table = dataTableCollection[0];
