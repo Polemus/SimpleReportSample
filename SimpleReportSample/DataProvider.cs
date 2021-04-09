@@ -28,7 +28,11 @@ namespace SimpleReportSample
         {
             TimeReport timeReportResult = new TimeReport();
             ///добавить фильтр по дате из названия файла
-            var reportFileByProject = filesInPath.Where(x => x.Contains(paymentData.ProjectName)).SingleOrDefault();
+            var reportFileByProject = filesInPath.Where(x => x.ToLower().Contains(paymentData.ProjectName.Trim().ToLower())).SingleOrDefault();
+
+            if (string.IsNullOrEmpty(reportFileByProject))
+                return null;
+
             Microsoft.Office.Interop.Excel.Application excel = new Microsoft.Office.Interop.Excel.Application();
             Microsoft.Office.Interop.Excel.Workbook wb = excel.Workbooks.Open(@reportFileByProject);
 
@@ -37,15 +41,17 @@ namespace SimpleReportSample
             // Loop through all worksheets in the workbook
             foreach (Microsoft.Office.Interop.Excel.Worksheet sheet in wb.Sheets)
             {
+                string[] nameOfSheet = sheet.Name.ToString().Split(' ');
+                string[] employerSplitedName = paymentData.EmployerName.Split(' ');
                 // Check the name of the current sheet
-                if (sheet.Name == paymentData.EmployerName)
+                if (nameOfSheet.Contains(employerSplitedName[0]) && nameOfSheet.Contains(employerSplitedName[1]))
                 {
                     found = true;
                     break; // Exit the loop now
                 }
             }
-
-            wb.Close();
+            
+            wb.Close(SaveChanges: false);
 
             if (found)
             {
@@ -77,6 +83,8 @@ namespace SimpleReportSample
             {
                 return null;
             }
+
+            timeReportResult.SetNameFromProject(paymentData.EmployerName);
 
             return timeReportResult;
         }
@@ -202,7 +210,27 @@ namespace SimpleReportSample
                 }
             }
 
-            return dataTableCollection["employeeName"];
+            string[] splitedName = employeeName.Trim().Split(' ');
+
+            string tableName = string.Empty;
+
+            bool found = false;
+
+            foreach (var table in dataTableCollection)
+            { 
+                tableName = ((System.Data.DataTable)table).TableName;
+
+                if (tableName.Contains(splitedName[0]) && tableName.Contains(splitedName[1]))
+                { 
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                throw new Exception($"Не найдена страница с TimeReport данного сотрудника {employeeName}");
+
+            return dataTableCollection[tableName];
         }
 
         private DataTableCollection GetDataTableCollection(string filePath, int skipRows = 0)
@@ -401,6 +429,11 @@ namespace SimpleReportSample
             internal void SetName(string filePath)
             {
                 this.Name = System.IO.Path.GetFileName(filePath).Split('_')[0];
+            }
+
+            internal void SetNameFromProject(string employeeName)
+            {
+                this.Name = employeeName;
             }
         }
     }

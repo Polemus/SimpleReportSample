@@ -75,7 +75,10 @@ namespace SimpleReportSample.Reports
             {
                 decimal hoursDiff = recalculatedTimeReportRows.Sum(x => x.RegularLabor.Value) - _paymentData.HoursInvoiced;
 
-                var firstRow = recalculatedTimeReportRows.First();
+                var firstRow = recalculatedTimeReportRows.FirstOrDefault();
+
+                if (firstRow == null)
+                    return new List<Specification>();
 
                 firstRow.RegularLabor = firstRow.RegularLabor - hoursDiff;
             }
@@ -102,9 +105,10 @@ namespace SimpleReportSample.Reports
 
         public Employee GetData()
         {
-            string[] name = _timeReport.Name.Split(' ').ToArray();
+            ///бессмысленный функционал
+            ///string[] name = _timeReport.Name.Split(' ').ToArray();
 
-            this._invoicerName = name;
+            ///this._invoicerName = name;
 
             /// находим из Time репорта чисто по имени?
 

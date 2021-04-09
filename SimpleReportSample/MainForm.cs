@@ -31,7 +31,8 @@ namespace SimpleReportSample
 
         private string _invoiceReportFolder = "Invoice_Report";
 
-        private string _reportName = "_InvoiceSpecAcceptanceTemplate";
+        private string _reportNameTemplate = ". Docs Date";
+        /// Fayzrakhmanov_Timur. Docs. 01 - 31 Mar
 
         public MainForm()
         {
@@ -60,8 +61,8 @@ namespace SimpleReportSample
             var data = _contractorsAndContractsData
                 .Select(x => new Employee() 
                 { 
-                    EmployeeName = x.NameEng,
-                    TimeReportDocExists = true
+                    EmployeeName = x.NameEng
+                    //,TimeReportDocExists = true
                 })
                 .ToList();
 
@@ -72,7 +73,7 @@ namespace SimpleReportSample
         { 
             public string EmployeeName { get; set; }
 
-            public bool TimeReportDocExists { get; set; }
+            //public bool TimeReportDocExists { get; set; }
         }
 
 
@@ -125,10 +126,19 @@ namespace SimpleReportSample
             return string.Empty;
         }
 
+        private class NoTimeReportEmploees
+        { 
+            public string EmployeeName { get;set; }
+
+            public string Reason { get;set; }
+        }
+
+
+
         private void SaveToPDF_Click(object sender, EventArgs e)
         {
             List<string> employeesForInvoiceReportList = new List<string>();
-            List<string> noTimeReportEmploees = new List<string>();
+            List<NoTimeReportEmploees> noTimeReportEmploees = new List<NoTimeReportEmploees>();
 
             foreach (DataGridViewRow row in this.EmploeeGridView.Rows)
             {
@@ -144,38 +154,64 @@ namespace SimpleReportSample
             foreach (var employee in employeesForInvoiceReportList)
             {
                 GenerateReportProgressBar.PerformStep();
-                //ProgressBarLabel.Text = $"Обработка файла #{GenerateReportProgressBar.Step} {employee}";
-                var pathToEmployee = GetPathToTimeReportByEmployeeName(employee);
-                var paymentData = GetPaymentDataFromList(employee);
-
-                TimeReport timeReportData = null;
-
-                if (string.IsNullOrEmpty(pathToEmployee))
+                try
                 {
+                    //ProgressBarLabel.Text = $"Обработка файла #{GenerateReportProgressBar.Step} {employee}";
+                    var pathToEmployee = GetPathToTimeReportByEmployeeName(employee);
+                    var paymentData = GetPaymentDataFromList(employee);
 
-                    timeReportData = _dataProvider.GetTimeReportByProject(_timeReportFilesList, paymentData);
+                    if (paymentData == null)
+                    { 
+                        noTimeReportEmploees.Add(new NoTimeReportEmploees()
+                        {
+                            EmployeeName = employee,
+                            Reason = "Payment Data Not Found"
+                        });
+                        continue;
+                    }
+
+                    TimeReport timeReportData = null;
+
+                    if (!string.IsNullOrEmpty(pathToEmployee))
+                    {
+                        timeReportData = _dataProvider.GetTimeReport(pathToEmployee);
+                    } 
+
+                    if (timeReportData == null || timeReportData.TimeReportRows == null || !timeReportData.TimeReportRows.Any())
+                    {
+                        timeReportData = _dataProvider.GetTimeReportByProject(_timeReportFilesList, paymentData);
+                    }
+
+                    if (timeReportData == null || timeReportData.TimeReportRows == null || !timeReportData.TimeReportRows.Any())
+                    {
+                        noTimeReportEmploees.Add(new NoTimeReportEmploees()
+                        {
+                            EmployeeName = employee,
+                            Reason = "Time Report Rows Not Found"
+                        });
+                        continue;
+                    }
+
+                    var reportGenerator = GetInvoiceReportGenerator(new InvoiceReportParams()
+                    {
+                        ContractorsData = GetContractorsData(employee),
+                        PaymentData = paymentData,
+                        TimeReportData = timeReportData,
+                        DateFrom = DateTimeFrom.Value,
+                        DateTo = DateTimeTo.Value
+                    });
+
+                    GenerateReport(reportGenerator, employee.Replace(' ', '_'));
                 }
-                else
-                {
-                    timeReportData = _dataProvider.GetTimeReport(pathToEmployee);
-                }
-
-                if (timeReportData == null)
-                {
-                    noTimeReportEmploees.Add(employee);
+                catch (Exception ex)
+                { 
+                    noTimeReportEmploees.Add(new NoTimeReportEmploees()
+                    {
+                        EmployeeName = employee,
+                        Reason = ex.Message + ex.StackTrace
+                    });
                     continue;
                 }
-
-                var reportGenerator = GetInvoiceReportGenerator(new InvoiceReportParams()
-                {
-                    ContractorsData = GetContractorsData(employee),
-                    PaymentData = paymentData,
-                    TimeReportData = timeReportData,
-                    DateFrom = DateTimeFrom.Value,
-                    DateTo = DateTimeTo.Value
-                });
-
-                GenerateReport(reportGenerator, employee.Replace(' ', '_'));
             }
 
             UpdateDataGrid(noTimeReportEmploees);
@@ -200,12 +236,13 @@ namespace SimpleReportSample
             ProgressBarLabel.Visible = true;
         }
 
-        private void UpdateDataGrid(List<string> emploees)
+        private void UpdateDataGrid(List<NoTimeReportEmploees> emploees)
         {
             foreach (DataGridViewRow row in EmploeeGridView.Rows)
-                if (emploees.Contains(row.Cells[1].Value.ToString()))
+                if (emploees.Select(x => x.EmployeeName).Contains(row.Cells[2].Value.ToString()))
                 {
                     row.DefaultCellStyle.BackColor = Color.Red;
+                    row.Cells[1].Value = emploees.Where(x => x.EmployeeName.Contains(row.Cells[2].Value.ToString())).Select(x => x.Reason).FirstOrDefault();
                 }
         }
 
@@ -234,6 +271,7 @@ namespace SimpleReportSample
             try
             {
                 var result = reportGenerator.Render(GetReportTemplateWorkbook());
+                string _reportName = _reportNameTemplate.Replace("Date", GetDatesRange());
 
                 result.SaveAs(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), _invoiceReportFolder, string.Format($"{employee}{_reportName}.xlsx")));
 
@@ -279,6 +317,11 @@ namespace SimpleReportSample
             }
 
             EmploeeGridView.RefreshEdit();
+        }
+
+        private string GetDatesRange()
+        {
+            return string.Format("{0} - {1}", this.DateTimeFrom.Value.Day.ToString("00"), this.DateTimeTo.Value.ToString("dd MMMM"));
         }
     }
 }

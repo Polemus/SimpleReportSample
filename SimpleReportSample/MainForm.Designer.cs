@@ -49,6 +49,7 @@ namespace SimpleReportSample
             this.EmploeeGridView = new System.Windows.Forms.DataGridView();
             this.CreateInvoiceFiles = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.EmployeeName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Reason = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.GenerateReportProgressBar = new System.Windows.Forms.ProgressBar();
             this.SelectAllRows = new System.Windows.Forms.Button();
             this.ProgressBarLabel = new System.Windows.Forms.Label();
@@ -195,7 +196,8 @@ namespace SimpleReportSample
             this.EmploeeGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.EmploeeGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.CreateInvoiceFiles,
-            this.EmployeeName});
+            this.EmployeeName, 
+            this.Reason});
             this.EmploeeGridView.Location = new System.Drawing.Point(694, 37);
             this.EmploeeGridView.Name = "EmploeeGridView";
             this.EmploeeGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
@@ -207,12 +209,19 @@ namespace SimpleReportSample
             this.CreateInvoiceFiles.HeaderText = "Generate invoice documents";
             this.CreateInvoiceFiles.Name = "CreateInvoiceFiles";
             // 
-            // EmployeeName
+            // Reason
+            // 
+            this.EmployeeName.DataPropertyName = "Reason";
+            this.EmployeeName.HeaderText = "Fail Reason";
+            this.Reason.Name = "Reason";
+            this.EmployeeName.Width = 300;
+            // 
+            // Reason
             // 
             this.EmployeeName.DataPropertyName = "EmployeeName";
             this.EmployeeName.HeaderText = "Employee Name";
             this.EmployeeName.Name = "EmployeeName";
-            this.EmployeeName.Width = 385;
+            this.EmployeeName.Width = 245;
             // 
             // GenerateReportProgressBar
             // 
@@ -293,6 +302,7 @@ namespace SimpleReportSample
         private System.Windows.Forms.DataGridView EmploeeGridView;
         private System.Windows.Forms.DataGridViewCheckBoxColumn CreateInvoiceFiles;
         private System.Windows.Forms.DataGridViewTextBoxColumn EmployeeName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Reason;
         private ProgressBar GenerateReportProgressBar;
         private Button SelectAllRows;
         private Label ProgressBarLabel;
