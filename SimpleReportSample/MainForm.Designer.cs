@@ -70,7 +70,7 @@ namespace SimpleReportSample
             // PathToContractorsAndContracts
             // 
             this.PathToContractorsAndContracts.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PathToContractorsAndContracts.Location = new System.Drawing.Point(34, 116);
+            this.PathToContractorsAndContracts.Location = new System.Drawing.Point(34, 180);
             this.PathToContractorsAndContracts.Name = "PathToContractorsAndContracts";
             this.PathToContractorsAndContracts.Size = new System.Drawing.Size(528, 21);
             this.PathToContractorsAndContracts.TabIndex = 1;
@@ -78,7 +78,7 @@ namespace SimpleReportSample
             // PathToPaymentsDoc
             // 
             this.PathToPaymentsDoc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PathToPaymentsDoc.Location = new System.Drawing.Point(34, 180);
+            this.PathToPaymentsDoc.Location = new System.Drawing.Point(34, 116);
             this.PathToPaymentsDoc.Name = "PathToPaymentsDoc";
             this.PathToPaymentsDoc.Size = new System.Drawing.Size(528, 21);
             this.PathToPaymentsDoc.TabIndex = 2;
@@ -90,10 +90,11 @@ namespace SimpleReportSample
             this.PathToTaskSummaryDoc.Name = "PathToTaskSummaryDoc";
             this.PathToTaskSummaryDoc.Size = new System.Drawing.Size(528, 21);
             this.PathToTaskSummaryDoc.TabIndex = 3;
+            this.PathToTaskSummaryDoc.TextChanged += new System.EventHandler(this.SelectPathToTasksTextChanged);
             // 
             // SelectPathToContractorsAndContracts
             // 
-            this.SelectPathToContractorsAndContracts.Location = new System.Drawing.Point(589, 116);
+            this.SelectPathToContractorsAndContracts.Location = new System.Drawing.Point(589, 180);
             this.SelectPathToContractorsAndContracts.Name = "SelectPathToContractorsAndContracts";
             this.SelectPathToContractorsAndContracts.Size = new System.Drawing.Size(75, 21);
             this.SelectPathToContractorsAndContracts.TabIndex = 4;
@@ -110,10 +111,11 @@ namespace SimpleReportSample
             this.SelectPathToTaskSummaryDoc.Text = "Выбрать";
             this.SelectPathToTaskSummaryDoc.UseVisualStyleBackColor = true;
             this.SelectPathToTaskSummaryDoc.Click += new System.EventHandler(this.SelectPathToTaskSummaryDoc_Click);
+            //this.SelectPathToTaskSummaryDoc.On += new System.EventHandler(this.TextChanged);
             // 
             // SelectPathToPaymentsDoc
             // 
-            this.SelectPathToPaymentsDoc.Location = new System.Drawing.Point(589, 180);
+            this.SelectPathToPaymentsDoc.Location = new System.Drawing.Point(589, 116);
             this.SelectPathToPaymentsDoc.Name = "SelectPathToPaymentsDoc";
             this.SelectPathToPaymentsDoc.Size = new System.Drawing.Size(75, 21);
             this.SelectPathToPaymentsDoc.TabIndex = 6;
@@ -128,7 +130,7 @@ namespace SimpleReportSample
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(139, 13);
             this.label1.TabIndex = 7;
-            this.label1.Text = "Контракты и исполнители";
+            this.label1.Text = "Данные о платежах";
             // 
             // label2
             // 
@@ -137,7 +139,7 @@ namespace SimpleReportSample
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(108, 13);
             this.label2.TabIndex = 8;
-            this.label2.Text = "Данные о платежах";
+            this.label2.Text = "Контракты и исполнители";
             // 
             // label3
             // 

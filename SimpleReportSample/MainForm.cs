@@ -55,18 +55,15 @@ namespace SimpleReportSample
 
         private void SelectPathToContractorsAndContracts_Click(object sender, EventArgs e)
         {
-            PathToContractorsAndContracts.Text = GetPathFromOpenFileDialog();
-            _contractorsAndContractsData = _dataProvider.GetContractorsAndContractsTableData(PathToContractorsAndContracts.Text, "Контракты");
-
-            var data = _contractorsAndContractsData
-                .Select(x => new Employee() 
-                { 
-                    EmployeeName = x.NameEng
-                    //,TimeReportDocExists = true
-                })
-                .ToList();
-
-            BindTable(data);
+            try
+            { 
+                PathToContractorsAndContracts.Text = GetPathFromOpenFileDialog();
+                _contractorsAndContractsData = _dataProvider.GetContractorsAndContractsTableData(PathToContractorsAndContracts.Text, "Контракты");
+            }
+            catch (Exception ex)
+            { 
+                
+            }
         }
 
         private class Employee
@@ -84,17 +81,55 @@ namespace SimpleReportSample
 
         private void SelectPathToPaymentsDoc_Click(object sender, EventArgs e)
         {
-            PathToPaymentsDoc.Text = GetPathFromOpenFileDialog();
+            try
+            { 
+                PathToPaymentsDoc.Text = GetPathFromOpenFileDialog();
 
-            _paymentData = _dataProvider.GetPaymentTableData(PathToPaymentsDoc.Text, "Payments");
+                _paymentData = _dataProvider.GetPaymentTableData(PathToPaymentsDoc.Text, "Payments");
+
+                var data = _paymentData
+                    .Select(x => new Employee() 
+                    { 
+                        EmployeeName = x.EmployerName
+                        //,TimeReportDocExists = true
+                    })
+                    .OrderBy(x => x.EmployeeName)
+                    .ToList();
+
+                BindTable(data);
+            }
+            catch (Exception ex)
+            { 
+            
+            }
         }
 
         private void SelectPathToTaskSummaryDoc_Click(object sender, EventArgs e)
         {
-            string path = OpenFolderDialog();
-            PathToTaskSummaryDoc.Text = path;
+            try
+            { 
+                string path = OpenFolderDialog();
+                PathToTaskSummaryDoc.Text = path;
 
-            _timeReportFilesList = Directory.GetFiles(@path, "*.xlsx"). ToList();
+                _timeReportFilesList = Directory.GetFiles(@path, "*.xlsx"). ToList();
+            }
+            catch(Exception ex)
+            { 
+            }
+        }
+
+        private void SelectPathToTasksTextChanged(object sender, EventArgs e)
+        {
+            try
+            { 
+                string path = (sender as System.Windows.Forms.TextBox).Text;
+                PathToTaskSummaryDoc.Text = path;
+
+                _timeReportFilesList = Directory.GetFiles(@path, "*.xlsx"). ToList();
+            }
+            catch(Exception ex)
+            { 
+            }
         }
 
         private string GetPathFromOpenFileDialog()
@@ -132,8 +167,6 @@ namespace SimpleReportSample
 
             public string Reason { get;set; }
         }
-
-
 
         private void SaveToPDF_Click(object sender, EventArgs e)
         {
@@ -214,7 +247,7 @@ namespace SimpleReportSample
                 }
             }
 
-            UpdateDataGrid(noTimeReportEmploees);
+            UpdateDataGrid(noTimeReportEmploees.OrderBy(x => x.EmployeeName).ToList());
             UpdateProgressBarAndGridview();
         }
 
