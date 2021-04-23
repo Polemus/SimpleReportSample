@@ -62,7 +62,15 @@ namespace SimpleReportSample
             }
             catch (Exception ex)
             { 
-                
+                if (ex.Message.Contains("The process cannot access the file"))
+                { 
+                    var exMessage = ex.Message.Replace("The process cannot access the file", string.Empty).Replace("because it is being used by another process.", string.Empty).Trim(); 
+                    throw new Exception($"Пожалуйста закройте файл {Path.GetFileName(exMessage)} или проверьте что он не используется другим процессом. Если это не помогло попробуйте проверить закрыт ли файл в диспетчере задач");
+                }
+                else
+                    throw new Exception(ex.Message);
+
+                PathToContractorsAndContracts.Text = string.Empty;
             }
         }
 
@@ -100,7 +108,15 @@ namespace SimpleReportSample
             }
             catch (Exception ex)
             { 
-            
+                if (ex.Message.Contains("The process cannot access the file"))
+                { 
+                    var exMessage = ex.Message.Replace("The process cannot access the file", string.Empty).Replace("because it is being used by another process.", string.Empty).Trim(); 
+                    throw new Exception($"Пожалуйста закройте файл {Path.GetFileName(exMessage)} или проверьте что он не используется другим процессом. Если это не помогло попробуйте проверить закрыт ли файл в диспетчере задач");
+                }
+                else
+                    throw new Exception(ex.Message);
+
+                PathToPaymentsDoc.Text = string.Empty;
             }
         }
 
@@ -115,6 +131,7 @@ namespace SimpleReportSample
             }
             catch(Exception ex)
             { 
+                throw new Exception(ex.Message);
             }
         }
 
@@ -296,7 +313,14 @@ namespace SimpleReportSample
 
         private ContractorsAndContracts GetContractorsData(string employee)
         {
-            return _contractorsAndContractsData.Where(x => string.Equals(x.NameEng, employee)).Single();
+            try
+            { 
+                return _contractorsAndContractsData.Where(x => string.Equals(x.NameEng, employee)).Single();
+            }
+            catch (Exception ex)
+            { 
+                throw new Exception("Не была найдена строка в контрактах");
+            }
         }
 
         private void GenerateReport(DefaultReportGenerator reportGenerator, string employee)
